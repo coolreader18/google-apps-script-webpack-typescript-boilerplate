@@ -1,0 +1,19 @@
+{
+  "name": "google-apps-script-webpack-typescript-boilerplate",
+  "version": "null",
+  "scripts": {
+    "build": "webpack --config config/webpack.config.js"
+  },
+  "devDependencies": {
+    "@types/google-apps-script": "~0.0.24",
+    "@types/webpack-env": "^1.13.6",
+    "ts-loader": "^4.4.1",
+    "tsconfig-paths-webpack-plugin": "^3.2.0",
+    "typescript": "^2.9.2",
+    "webpack": "^4.13.0",
+    "webpack-cli": "^3.0.8"
+  },
+  "dependencies": {
+    "core-js": "~2.5.7"
+  }
+}

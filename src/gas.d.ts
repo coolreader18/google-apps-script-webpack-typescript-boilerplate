@@ -1,18 +1,18 @@
-interface GetEvent {
+type WebOutput =
+  | GoogleAppsScript.Content.TextOutput
+  | GoogleAppsScript.HTML.HtmlOutput;
+
+interface GetEvent<P extends string = string> {
   queryString: string;
   contextPath: "";
   contextLength: number;
-  parameter: {
-    [k: string]: string;
-  };
-  parameters: {
-    [k: string]: string[];
-  };
+  parameter: { [k in P]: string };
+  parameters: { [k in P]: string[] };
 }
 
-type DoGet = (e: GetEvent) => GoogleAppsScript.Content.TextOutput;
+type DoGet<P extends string = string> = (e: GetEvent<P>) => WebOutput;
 
-interface PostEvent extends GetEvent {
+interface PostEvent<P extends string = string> extends GetEvent<P> {
   postData: {
     length: number;
     type: GoogleAppsScript.Content.MimeType;
@@ -21,4 +21,9 @@ interface PostEvent extends GetEvent {
   };
 }
 
-type DoPost = (e: PostEvent) => GoogleAppsScript.Content.TextOutput;
+type DoPost<P extends string = string> = (e: PostEvent<P>) => WebOutput;
+
+declare module "*.html" {
+  const val: string;
+  export default val;
+}

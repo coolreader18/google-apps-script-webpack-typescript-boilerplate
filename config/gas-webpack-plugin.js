@@ -1,8 +1,8 @@
 const ts = require("typescript");
-const webpack = require("webpack");
 const path = require("path");
 
 const tapName = "GASWebpackPlugin";
+const entryFile = path.resolve("src/index.ts");
 
 module.exports = class GASWebpackPlugin {
   constructor() {
@@ -13,45 +13,44 @@ module.exports = class GASWebpackPlugin {
     compiler.hooks.emit.tap(tapName, compilation => {
       compilation.chunks.forEach(chunk => {
         chunk.files.forEach(filename => {
+          if (!filename.match(/\.data\.html$/)) return;
           const source = compilation.assets[filename].source();
-          let funcs = "";
-          this.entryExports.forEach(cur => {
-            funcs += `function ${cur}(){}`;
-          });
-          const newSource = funcs + source;
+          const newSource = `<?${JSON.stringify(source)}?>`;
           compilation.assets[filename] = {
             source: () => newSource,
             size: () => newSource.length
           };
         });
       });
+      const funcs = [...this.entryExports]
+        .map(exp => `function ${exp}(){}`)
+        .join("");
+      compilation.assets["Code.js"] = {
+        source: () => funcs,
+        size: () => funcs.length
+      };
     });
   }
   transformer(context) {
-    const { entryExports } = this;
-    return node =>
-      ts.visitNode(node, sourceFile => {
-        if (sourceFile.fileName === path.join(__dirname, "../src/index.ts")) {
-          ts.visitEachChild(
-            sourceFile,
-            statement => {
-              if (
-                statement.getFirstToken().kind === ts.SyntaxKind.ExportKeyword
-              ) {
-                statement
-                  .getChildAt(1)
-                  .getChildAt(1)
-                  .getChildren()
-                  .filter(cur => ts.isVariableDeclaration(cur))
-                  .forEach(child => {
-                    entryExports.add(child.name.escapedText);
-                  });
-              }
-            },
-            context
-          );
-        }
-        return sourceFile;
-      });
+    const statementHandler = statement => {
+      const token = statement.getFirstToken();
+      if (token && token.kind === ts.SyntaxKind.ExportKeyword) {
+        statement
+          .getChildAt(1)
+          .getChildAt(1)
+          .getChildren()
+          .filter(cur => ts.isVariableDeclaration(cur))
+          .forEach(child => {
+            this.entryExports.add(child.name.escapedText);
+          });
+      }
+    };
+    const fileHandler = sourceFile => {
+      if (sourceFile.fileName === entryFile) {
+        ts.visitEachChild(sourceFile, statementHandler, context);
+      }
+      return sourceFile;
+    };
+    return node => ts.visitNode(node, fileHandler);
   }
 };

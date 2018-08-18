@@ -25,7 +25,9 @@ const resolveModuleParams = [
   {},
   ts.createCompilerHost({})
 ];
-const assets = fs.readFileSync(path.join(__dirname, "assets.json"));
+const assets = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "assets.json"), "utf8")
+);
 
 const config = {
   entry: Object.entries(assets)

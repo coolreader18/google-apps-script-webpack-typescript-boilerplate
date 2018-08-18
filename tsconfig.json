@@ -7,19 +7,7 @@
     "moduleResolution": "node",
     "module": "es2015",
     "jsx": "react",
-    "lib": [
-      "es5",
-
-      "dom",
-
-      "es2015.core",
-      "es2015.collection",
-      "es2015.reflect",
-
-      "es2016.array.include",
-
-      "es2017.object"
-    ]
+    "lib": ["es5"]
   },
   "exclude": ["config", "dist"]
 }

@@ -1,5 +1,10 @@
+if (!process.env.NODE_ENV) process.env.NODE_ENV = "production";
+require("dotenv").load();
+
 const GASWebpackPlugin = require("./gas-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const path = require("path");
+const fs = require("fs");
 const webpack = require("webpack");
 
 const gasPlugin = new GASWebpackPlugin();
@@ -9,21 +14,28 @@ const babelLoader = {
 };
 const isDev = process.env.NODE_ENV !== "production";
 const mode = isDev ? "development" : "production";
+const ts = require("typescript");
 
 const assetTypes = {
   data: "data.html",
   source: "js"
 };
-const assets = {
-  client: { type: "data", path: "./src/client/index.tsx" },
-  main: { type: "source", path: "./src/index.ts" }
-};
+const resolveModuleParams = [
+  path.resolve("./src/index"),
+  {},
+  ts.createCompilerHost({})
+];
+const assets = fs.readFileSync(path.join(__dirname, "assets.json"));
 
 const config = {
   entry: Object.entries(assets)
     .map(([filename, { type, path }]) => {
       filename = `${filename}.${assetTypes[type]}`;
-      return [filename, path];
+      const { resolvedFileName } = ts.resolveModuleName(
+        path,
+        ...resolveModuleParams
+      ).resolvedModule;
+      return [filename, resolvedFileName];
     })
     .reduce((obj, [key, val]) => ((obj[key] = val), obj), {}),
   output: {
@@ -38,7 +50,8 @@ const config = {
       "process.env": {
         NODE_ENV: JSON.stringify(mode)
       }
-    })
+    }),
+    new CopyWebpackPlugin(["src/appsscript.json"])
   ],
   resolve: {
     extensions: [".js", ".ts", ".tsx"]

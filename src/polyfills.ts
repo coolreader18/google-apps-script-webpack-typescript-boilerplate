@@ -1,14 +1,17 @@
+/// <reference lib="es2017.string" />
 // String functions
 import "core-js/fn/string/pad-start";
 import "core-js/fn/string/pad-end";
 import "core-js/fn/string/starts-with";
 import "core-js/fn/string/ends-with";
 
+/// <reference lib="es2017.object" />
 // Object functions
 import "core-js/fn/object/values";
 import "core-js/fn/object/entries";
 import "core-js/fn/object/get-own-property-descriptors";
 
+/// <reference lib="es2015" />
 // ES2015 general stuff
 import "core-js/fn/array/find";
 import "core-js/fn/array/find-index";

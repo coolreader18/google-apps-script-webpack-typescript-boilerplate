@@ -16,19 +16,24 @@ module.exports = class GASWebpackPlugin {
           if (!filename.match(/\.data\.html$/)) return;
           const source = compilation.assets[filename].source();
           const newSource = `<?${JSON.stringify(source)}?>`;
-          compilation.assets[filename] = {
-            source: () => newSource,
-            size: () => newSource.length
-          };
+          compilation.assets[filename] = makeAsset(newSource);
         });
       });
-      const funcs = [...this.entryExports]
-        .map(exp => `function ${exp}(){}`)
-        .join("");
-      compilation.assets["Code.js"] = {
-        source: () => funcs,
-        size: () => funcs.length
-      };
+      Object.assign(
+        compilation.assets,
+        {
+          "Code.js": makeAsset(
+            [...this.entryExports].map(exp => `function ${exp}(){}`).join("")
+          )
+        },
+        process.env.CLASP_SCRIPT_ID && {
+          ".clasp.json": makeAsset(
+            JSON.stringify({
+              scriptId: process.env.CLASP_SCRIPT_ID
+            })
+          )
+        }
+      );
     });
   }
   transformer(context) {
@@ -54,3 +59,8 @@ module.exports = class GASWebpackPlugin {
     return node => ts.visitNode(node, fileHandler);
   }
 };
+
+const makeAsset = text => ({
+  source: () => text,
+  size: () => text.length
+});

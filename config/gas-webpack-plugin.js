@@ -1,8 +1,6 @@
 const ts = require("typescript");
-const path = require("path");
 
 const tapName = "GASWebpackPlugin";
-const entryFile = path.resolve("src/index.ts");
 
 module.exports = class GASWebpackPlugin {
   constructor() {
@@ -51,7 +49,7 @@ module.exports = class GASWebpackPlugin {
       }
     };
     const fileHandler = sourceFile => {
-      if (sourceFile.fileName === entryFile) {
+      if (sourceFile.fileName === __entryFile) {
         ts.visitEachChild(sourceFile, statementHandler, context);
       }
       return sourceFile;

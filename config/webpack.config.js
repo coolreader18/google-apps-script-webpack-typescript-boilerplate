@@ -26,6 +26,10 @@ const resolveModuleParams = [
   ts.createCompilerHost({})
 ];
 const assets = fs.readFileSync(path.join(__dirname, "assets.json"));
+global.__entryFile = ts.resolveModuleName(
+  Object.values(assets)[0].path,
+  ...resolveModuleParams
+).resolvedModule.resolvedFileName;
 
 const config = {
   entry: Object.entries(assets)

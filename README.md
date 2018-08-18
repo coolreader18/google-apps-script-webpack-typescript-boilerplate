@@ -12,6 +12,7 @@ git clone https://github.com/coolreader18/google-apps-script-webpack-typescript-
 cd $PROJECT_NAME
 rm -rf .git
 git init
+yarn
 ```
 Or, if you don't have git installed download the zip from github.
 

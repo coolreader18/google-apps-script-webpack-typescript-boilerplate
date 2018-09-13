@@ -1,13 +1,12 @@
 if (!process.env.NODE_ENV) process.env.NODE_ENV = "production";
 require("dotenv").load();
 
-const GASWebpackPlugin = require("./gas-webpack-plugin");
+const gasPlugin = require("./gas-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const path = require("path");
 const fs = require("fs");
 const webpack = require("webpack");
 
-const gasPlugin = new GASWebpackPlugin();
 const babelLoader = {
   loader: "babel-loader",
   options: require("./babel.config")
@@ -34,6 +33,7 @@ global.__entryFile = ts.resolveModuleName(
   ...resolveModuleParams
 ).resolvedModule.resolvedFileName;
 
+/** @type webpack.Configuration */
 const config = {
   entry: Object.entries(assets)
     .map(([filename, { type, path }]) => {
@@ -67,17 +67,7 @@ const config = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: [
-          babelLoader,
-          {
-            loader: "ts-loader",
-            options: {
-              getCustomTransformers: () => ({
-                before: [gasPlugin.transformer]
-              })
-            }
-          }
-        ]
+        use: [babelLoader, "ts-loader"]
       },
       {
         test: /\.js$/,

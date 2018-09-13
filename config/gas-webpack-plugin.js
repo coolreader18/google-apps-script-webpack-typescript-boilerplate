@@ -1,12 +1,8 @@
-const ts = require("typescript");
-
 const tapName = "GASWebpackPlugin";
+const webpack = require("webpack");
 
-module.exports = class GASWebpackPlugin {
-  constructor() {
-    this.entryExports = new Set();
-    this.transformer = this.transformer.bind(this);
-  }
+/** @type webpack.Plugin */
+const gasPlugin = {
   apply(compiler) {
     compiler.hooks.emit.tap(tapName, compilation => {
       compilation.chunks.forEach(chunk => {
@@ -17,11 +13,14 @@ module.exports = class GASWebpackPlugin {
           compilation.assets[filename] = makeAsset(newSource);
         });
       });
+      console.log(compilation.entries[0].resource);
       Object.assign(
         compilation.assets,
         {
           "Code.js": makeAsset(
-            [...this.entryExports].map(exp => `function ${exp}(){}`).join("")
+            compilation.entries[0].buildMeta.providedExports
+              .map(exp => `function ${exp}(){}`)
+              .join("")
           )
         },
         process.env.CLASP_SCRIPT_ID && {
@@ -34,31 +33,11 @@ module.exports = class GASWebpackPlugin {
       );
     });
   }
-  transformer(context) {
-    const statementHandler = statement => {
-      const token = statement.getFirstToken();
-      if (token && token.kind === ts.SyntaxKind.ExportKeyword) {
-        statement
-          .getChildAt(1)
-          .getChildAt(1)
-          .getChildren()
-          .filter(cur => ts.isVariableDeclaration(cur))
-          .forEach(child => {
-            this.entryExports.add(child.name.escapedText);
-          });
-      }
-    };
-    const fileHandler = sourceFile => {
-      if (sourceFile.fileName === __entryFile) {
-        ts.visitEachChild(sourceFile, statementHandler, context);
-      }
-      return sourceFile;
-    };
-    return node => ts.visitNode(node, fileHandler);
-  }
 };
 
 const makeAsset = text => ({
   source: () => text,
   size: () => text.length
 });
+
+module.exports = gasPlugin;
